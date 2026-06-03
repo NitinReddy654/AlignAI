@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      ALIGNAI_SKIP_OPENAI_VALIDATION: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements-dev.txt
+          pip install -e .
+
+      - name: Lint with ruff
+        run: ruff check src/ tests/ scripts/
+
+      - name: Run tests
+        run: pytest tests/ -v --cov=alignai --cov-report=term-missing
+
+      - name: Smoke test imports
+        run: |
+          python -c "from alignai.config import get_config; get_config()"
+          python -c "from alignai.evaluation.rubrics import EVALUATION_CATEGORIES; assert len(EVALUATION_CATEGORIES) == 8"

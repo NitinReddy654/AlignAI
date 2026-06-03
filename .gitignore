@@ -1,0 +1,69 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+
+# AlignAI artifacts
+checkpoints/
+logs/
+data/artifacts/experiments/*.json
+data/artifacts/evaluations/*.json
+data/artifacts/reports/*.json
+data/artifacts/preferences/*.json
+data/artifacts/datasets/*.json
+data/artifacts/recommendations/*.json
+!data/artifacts/.gitkeep
+!data/samples/
+
+# Model checkpoints (large files)
+Qwen*/
+*.safetensors
+*.bin
+*.pt
+*.pth
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+.mypy_cache/
+
+# Tensorboard
+runs/
+tensorboard/
