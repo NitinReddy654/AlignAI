@@ -4,7 +4,17 @@
 
 ## Overview
 
-AlignAI uses a multi-layered evaluation approach combining automated LLM-as-a-Judge scoring with human preference collection.
+AlignAI uses a multi-layered evaluation approach combining retrieval-grounded evaluation, automated LLM-as-a-Judge scoring, code-generation quality checks, and human preference collection.
+
+## Retrieval-Grounded Evaluation
+
+The `alignai.rag` package adds RAG evaluation support:
+
+- `ChromaContextRetriever` stores and retrieves context from ChromaDB
+- `OpenAIEmbeddingFunction` supports production embedding retrieval
+- `LocalHashEmbeddingFunction` supports offline semantic-search tests
+- `build_rag_augmented_judge_messages` injects retrieved context into judge prompts
+- `evaluate_rag_context` computes heuristic relevance, faithfulness, groundedness, and unsupported-term signals
 
 ## LLM-as-a-Judge
 
@@ -35,6 +45,17 @@ Pairwise A/B comparisons with blind, randomized presentation:
 - Evaluators choose preferred response, mark tie, or skip
 - Win rates computed per model with head-to-head analytics
 
+## Code-Generation Alignment
+
+The `experiments/code_alignment` module evaluates programming LLM outputs across:
+
+- Functional correctness
+- Security
+- Readability
+- Efficiency
+
+The YAML rubric in `code_rubric.yaml` defines category weights, and `evaluate_code_quality` produces a structured quality report for generated code.
+
 ## Evaluation Confidence Engine
 
 Heuristic score (0-100) based on:
@@ -56,6 +77,8 @@ Composite 0-100 score weighting:
 - Dataset health (10%)
 - Instruction following (10%)
 - Conciseness (5%)
+
+RAG grounding and code-quality scores can be attached to reports as additional deployment evidence when the evaluation set includes retrieved-context or programming tasks.
 
 Thresholds:
 - **80+**: Ready for staged deployment

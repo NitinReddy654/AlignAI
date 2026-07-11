@@ -27,9 +27,9 @@ with col1:
 with col2:
     st.metric("Evaluation Categories", "8", help="Correctness through Tone Alignment")
 with col3:
-    st.metric("Readiness Score", "0-100", help="Composite deployment readiness metric")
+    st.metric("RAG + Code Eval", "2", help="Retrieval grounding and code-generation scoring")
 with col4:
-    st.metric("Decision Signals", "9", help="Quality, safety, cost, latency, preference, and confidence")
+    st.metric("Test Coverage", "40", help="Pytest coverage across core, RAG, distributed, and code alignment")
 
 st.markdown("---")
 
@@ -38,8 +38,10 @@ st.markdown("### Platform Modules")
 modules = [
     ("Dataset Management", "Upload, inspect, and analyze training datasets"),
     ("Experiment Tracking", "Monitor fine-tuning experiments and hyperparameters"),
-    ("Fine-Tuning Jobs", "Launch and configure LoRA, QLoRA, or full fine-tuning"),
-    ("Evaluation Center", "Run automated LLM-as-a-Judge evaluations"),
+    ("Fine-Tuning Jobs", "Launch LoRA, QLoRA, full fine-tuning, or distributed training workflows"),
+    ("RAG Grounding", "Retrieve ChromaDB context and inject evidence into alignment evaluation"),
+    ("Code Alignment", "Score generated code for correctness, security, readability, and efficiency"),
+    ("Evaluation Center", "Run automated LLM-as-a-Judge and RAG-faithfulness evaluations"),
     ("Alignment Dashboard", "Review readiness scores, risk signals, and improvement actions"),
     ("Leaderboards", "Compare models by quality, cost, and preference"),
     ("Human Review Center", "Collect pairwise human preference feedback"),

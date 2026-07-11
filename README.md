@@ -4,170 +4,134 @@
 ![PyTorch](https://img.shields.io/badge/ML-PyTorch-ee4c2c)
 ![Transformers](https://img.shields.io/badge/LLM-Hugging%20Face-ffcc00)
 ![PEFT](https://img.shields.io/badge/Fine--Tuning-LoRA%20%2B%20QLoRA-6b46c1)
+![ChromaDB](https://img.shields.io/badge/RAG-ChromaDB-6b46c1)
+![Distributed](https://img.shields.io/badge/Training-DDP%20%2B%20FSDP-1f2937)
 ![Streamlit](https://img.shields.io/badge/UI-Streamlit-ff4b4b)
 ![OpenAI](https://img.shields.io/badge/Judge-OpenAI-111827)
 ![CI](https://img.shields.io/badge/CI-pytest%20%2B%20ruff-success)
 ![License](https://img.shields.io/badge/License-Apache--2.0-green)
 
 **AlignAI** is a Generative AI evaluation and enablement platform for adapting,
-evaluating, and selecting domain-specific LLMs. It implements the core workflow
-behind enterprise AI enablement: dataset readiness, model fine-tuning,
-LLM-as-a-judge evaluation, human preference review, alignment scoring,
-confidence analysis, cost tracking, and deployment decision support.
+grounding, evaluating, and selecting domain-specific LLMs before deployment.
 
-Instead of treating fine-tuning as a one-off notebook task, AlignAI turns the
-process into a repeatable model-governance workflow. Teams can compare Base,
-LoRA, QLoRA, and Full Fine-Tuning variants, score them against a structured
-rubric, collect blind A/B human feedback, and export evidence-backed reports
-before a model is promoted.
+It combines **fine-tuning**, **RAG grounding**, **LLM-as-a-judge evaluation**,
+**code-generation assessment**, **human preference review**, **alignment
+readiness scoring**, **distributed training hooks**, **SQL dataset management**,
+and **deployment decision support** in one reproducible workflow.
 
-## System Overview
+## Table of Contents
+
+- [Why AlignAI](#why-alignai)
+- [At a Glance](#at-a-glance)
+- [What It Evaluates](#what-it-evaluates)
+- [Architecture](#architecture)
+- [Quick Start](#quick-start)
+- [Core Workflows](#core-workflows)
+- [Python Examples](#python-examples)
+- [Capability Matrix](#capability-matrix)
+- [Tech Stack](#tech-stack)
+- [Repository Structure](#repository-structure)
+- [Validation](#validation)
+- [Documentation](#documentation)
+
+## Why AlignAI
+
+Fine-tuning a model is only one part of enterprise AI adoption. Teams also need
+to answer harder release questions:
+
+- Is the tuned model actually better than the base model?
+- Is the answer grounded in retrieved enterprise context?
+- Is the model safe, consistent, and instruction-following enough to ship?
+- Does human preference agree with automated judge scores?
+- Which candidate has the best tradeoff across quality, safety, cost, latency,
+  confidence, and dataset health?
+
+AlignAI turns those questions into a measurable model-governance workflow. It
+compares **Base**, **Full Fine-Tuning**, **LoRA**, and **QLoRA** variants,
+scores outputs with structured rubrics, evaluates retrieved-context
+faithfulness, analyzes generated code, captures blind A/B feedback, and exports
+decision-ready reports.
+
+## At a Glance
 
 | Area | Implementation |
 | --- | --- |
-| System purpose | Evaluates and compares fine-tuned LLM variants for staged deployment readiness |
-| AI enablement workflow | Dataset analysis, training, generation, judge evaluation, human review, leaderboard, and reports |
-| Fine-tuning engine | Hugging Face Transformers, TRL SFTTrainer, PEFT LoRA/QLoRA, full fine-tuning, and hardware-aware loading |
-| Evaluation engine | OpenAI LLM-as-a-judge with an 8-category enterprise-support rubric |
-| Alignment scoring | 0-100 Alignment Readiness Score weighted across quality, safety, consistency, human preference, and dataset health |
-| Decision support | Candidate ranking across judge quality, readiness, confidence, safety, preference, latency, cost, and dataset health |
-| User experience | 8-page Streamlit platform covering datasets, experiments, training jobs, evaluations, alignment, leaderboards, human review, and reports |
-| Persistence | JSON-backed experiment registry, evaluation reports, dataset health files, preference records, and exportable decision artifacts |
-| Delivery | Dockerfile, Makefile, GitHub Actions CI, pytest coverage, ruff linting, and reproducible CLI entrypoints |
+| System purpose | Select deployment-ready LLM variants using measurable quality, safety, grounding, preference, and cost signals |
+| Fine-tuning | Full Fine-Tuning, LoRA, and QLoRA with Hugging Face Transformers, TRL, PEFT, and bitsandbytes |
+| Distributed training | PyTorch DDP setup, FSDP wrapping, DataParallel fallback, and distributed SFT configuration helpers |
+| RAG grounding | ChromaDB vector retrieval, OpenAI/local embeddings, semantic search, prompt augmentation, faithfulness scoring |
+| LLM evaluation | OpenAI LLM-as-a-judge across 8 enterprise-support rubric categories |
+| Code alignment | Programming LLM quality checks for functional correctness, security, readability, and efficiency |
+| Human review | Blind pairwise A/B response comparison with win-rate analytics |
+| Decision support | 9 deployment signals across quality, readiness, confidence, safety, preference, latency, cost, and dataset health |
+| UI | 8-page Streamlit platform for dataset, training, evaluation, alignment, leaderboard, review, and reports |
+| Data layer | JSON artifact store plus SQLite schema and SQL notebook for dataset/evaluation analysis |
+| Validation | 40 pytest tests, ruff linting, Dockerfile, Makefile, and GitHub Actions workflow |
 
-## LLM Evaluation Design
+## What It Evaluates
 
-AlignAI implements the main layers of a production-minded LLM evaluation system:
-
-| Layer | Implementation |
+| Evaluation Surface | Signals Produced |
 | --- | --- |
-| Dataset readiness | JSONL conversation analysis with role balance, duplicate detection, token estimates, and health scoring |
-| Model adaptation | Strategy-specific training for Base, LoRA, QLoRA, and Full Fine-Tuning model variants |
-| Generation metrics | Evaluation responses include latency, input tokens, output tokens, total tokens, and tokens per second |
-| Automated judging | OpenAI judge model scores correctness, relevance, helpfulness, instruction following, safety, consistency, conciseness, and tone |
-| Human preference | Blind pairwise A/B review with win-rate analytics and head-to-head comparison support |
-| Readiness scoring | Composite deployment-readiness signal normalized to 0-100 |
-| Confidence analysis | Heuristic confidence score based on sample coverage, judge variance, human agreement, category coverage, and contradictions |
-| Cost awareness | Training duration and GPU cost estimates tracked in experiment metadata |
-| Decision export | JSON reports combine judge scores, readiness, confidence, candidate rankings, evidence, tradeoffs, and deployment gates |
-
-## Measured Results
-
-Current verification from this codebase:
-
-| Check | Result |
-| --- | --- |
-| Test suite | 30 passed pytest tests |
-| Dependency consistency | `python -m pip check` reports no broken requirements |
-| Streamlit workflow | 8 application pages for the full AI enablement lifecycle |
-| Fine-tuning strategies | 3 supported strategies: Full Fine-Tuning, LoRA, and QLoRA |
-| Evaluation rubric | 8 judge categories with score and justification fields |
-| Deployment metrics | 9 tracked candidate signals: quality, readiness, confidence, safety, preference, latency, training cost, inference cost, and dataset health |
-| Sample data | 12 enterprise-support conversations for local pipeline validation |
-| Artifact model | JSON outputs for experiments, evaluations, reports, preferences, dataset health, and deployment decisions |
-| CI workflow | GitHub Actions installs dependencies, runs ruff, runs pytest with coverage, and smoke-tests core imports |
+| Dataset readiness | Role balance, duplicates, token estimates, conversation length, quality issues, health score |
+| Fine-tuned text models | Judge score, category breakdowns, alignment readiness, confidence, latency, token metrics |
+| RAG responses | Retrieval relevance, response faithfulness, groundedness, unsupported terms, context count |
+| Code-generation models | Functional correctness, security, readability, efficiency, overall code-quality score |
+| Human preference | Pairwise win rates, ties, skips, and head-to-head model preference analytics |
+| Deployment candidates | Ranked candidate table with supporting evidence, tradeoffs, warnings, and alternatives |
 
 ## Architecture
 
 ```mermaid
-flowchart LR
-    D[Enterprise support dataset] --> A[Dataset analyzer]
-    A --> H[Dataset health report]
-    D --> T[Fine-tuning job]
-    T --> E[Experiment registry]
-    T --> C[Model checkpoint]
-    C --> G[Response generation]
-    G --> J[LLM-as-a-judge]
-    J --> R[Evaluation report]
-    R --> S[Alignment Readiness Score]
-    R --> F[Evaluation Confidence Score]
-    G --> P[Human A/B review]
-    P --> L[Preference analytics]
-    E --> B[Leaderboard]
-    S --> B
-    F --> B
-    L --> B
-    B --> X[Deployment decision support]
-```
+flowchart TB
+    subgraph Data["Dataset and Knowledge Layer"]
+        D[JSONL conversation dataset]
+        SQL[SQLite alignment schema]
+        K[Enterprise knowledge chunks]
+    end
 
-Runtime flow:
+    subgraph Training["Model Adaptation Layer"]
+        A[Dataset analyzer]
+        T[Full FT / LoRA / QLoRA]
+        DIST[DDP / FSDP / DataParallel helpers]
+        CKPT[Checkpoints + experiment registry]
+    end
 
-1. Training data is analyzed for dataset health and quality risks.
-2. A candidate model is trained through Full Fine-Tuning, LoRA, or QLoRA.
-3. Experiment metadata captures strategy, model version, hyperparameters,
-   duration, output path, and cost estimate.
-4. The candidate model generates evaluation responses with latency and token
-   metrics.
-5. The LLM judge scores responses using the structured enterprise-support
-   rubric.
-6. Human reviewers provide blind A/B preference feedback.
-7. Alignment and confidence engines convert evidence into deployment-readiness
-   signals.
-8. Leaderboards and reports rank candidates and export decision artifacts.
+    subgraph Retrieval["RAG Grounding Layer"]
+        EMB[OpenAI or local embeddings]
+        VDB[ChromaDB vector store]
+        RET[Semantic retrieval]
+        RAG[RAG faithfulness evaluation]
+    end
 
-More system-design detail is available in [docs/architecture.md](docs/architecture.md).
+    subgraph Evaluation["Evaluation Layer"]
+        GEN[Candidate generation]
+        JUDGE[OpenAI LLM-as-a-Judge]
+        CODE[Code-generation alignment]
+        HUMAN[Human A/B preference review]
+    end
 
-## Core Features
+    subgraph Decision["Decision Layer"]
+        READY[0-100 Alignment Readiness]
+        CONF[Evaluation Confidence]
+        BOARD[Leaderboard]
+        REPORT[Exportable JSON reports]
+    end
 
-| Capability | Implementation |
-| --- | --- |
-| Dataset Management | Upload, inspect, analyze, and persist health reports for JSONL conversation data |
-| Experiment Tracking | JSON registry for model version, dataset version, strategy, hyperparameters, duration, cost, status, and evaluation scores |
-| Fine-Tuning Jobs | Configurable Full Fine-Tuning, LoRA, and QLoRA jobs using TRL SFTTrainer |
-| Model Loading | Base, full checkpoint, LoRA adapter, and QLoRA adapter loading utilities |
-| Response Generation | Chat-template generation with latency and token-throughput metrics |
-| LLM-as-a-Judge | OpenAI-backed evaluator with structured JSON output and retry handling |
-| Alignment Dashboard | Readiness score, score breakdown, confidence evidence, and improvement actions |
-| Human Review Center | Pairwise comparison preparation, preference collection, ties/skips, and analytics |
-| Leaderboards | Model comparison by quality, alignment, safety, cost, latency, preference, and confidence |
-| Reports | Exportable JSON reports with category breakdowns, judge reasoning samples, examples, readiness, confidence, and deployment decision data |
-| Deployment Decision Engine | Weighted candidate ranking with supporting evidence, tradeoffs, alternative fit, and rollout gates |
-| CI Validation | Offline test suite, linting, coverage reporting, and import smoke tests |
-
-## Tech Stack
-
-| Layer | Tools |
-| --- | --- |
-| Language | Python 3.11+ |
-| ML framework | PyTorch |
-| LLM tooling | Hugging Face Transformers, Datasets, Accelerate |
-| Fine-tuning | PEFT, LoRA, QLoRA, TRL SFTTrainer, bitsandbytes |
-| Evaluation | OpenAI SDK and structured LLM-as-a-judge prompts |
-| UI | Streamlit multipage application |
-| Data and visualization | Pandas, NumPy, Matplotlib, Seaborn |
-| Configuration | python-dotenv and environment-backed settings |
-| Testing | pytest, pytest-cov, ruff |
-| Delivery | Docker, Makefile, GitHub Actions |
-
-## Repository Structure
-
-```text
-alignai/
-|-- app/                   # Streamlit AI enablement platform
-|   |-- Home.py
-|   `-- pages/             # Dataset, experiment, training, evaluation, alignment, leaderboard, review, and report pages
-|-- data/
-|   |-- samples/           # Enterprise-support sample dataset
-|   `-- artifacts/         # Generated JSON outputs kept out of source control
-|-- docs/                  # Architecture, deployment, evaluation, alignment, and decision-engine docs
-|-- notebooks/             # Fine-tuning and evaluation pipeline notebooks
-|-- scripts/               # CLI entrypoints for analysis, training, and evaluation
-|-- src/alignai/           # Core package
-|   |-- alignment/         # Readiness scoring and normalized deployment signals
-|   |-- datasets_analysis/ # Dataset health analysis
-|   |-- evaluation/        # Judge prompts, scoring, confidence, metrics, and reports
-|   |-- experiments/       # Registry, leaderboard, and deployment decision ranking
-|   |-- models/            # Model loading and response generation
-|   |-- preference/        # Human review and preference analytics
-|   `-- training/          # Data formatting, strategy configs, and trainer orchestration
-|-- tests/                 # Offline pytest suite
-|-- .github/workflows/     # CI verification
-|-- Dockerfile
-|-- Makefile
-|-- pyproject.toml
-|-- requirements.txt
-|-- requirements-dev.txt
-`-- README.md
+    D --> A --> T --> CKPT --> GEN
+    T --> DIST
+    D --> SQL
+    K --> EMB --> VDB --> RET --> RAG
+    RET --> JUDGE
+    GEN --> JUDGE
+    GEN --> CODE
+    GEN --> HUMAN
+    JUDGE --> READY
+    RAG --> READY
+    CODE --> REPORT
+    HUMAN --> READY
+    READY --> BOARD
+    CONF --> BOARD
+    BOARD --> REPORT
 ```
 
 ## Quick Start
@@ -181,13 +145,13 @@ python -m pip install -e .
 cp .env.example .env
 ```
 
-Add your OpenAI key to `.env` for judge-based evaluation:
+Set an OpenAI key for judge-based evaluation and production embeddings:
 
 ```text
 OPENAI_API_KEY=sk-your-openai-key-here
 ```
 
-Run the Streamlit platform:
+Run the platform:
 
 ```bash
 streamlit run app/Home.py
@@ -199,7 +163,7 @@ Open:
 http://localhost:8501
 ```
 
-## Core Commands
+## Core Workflows
 
 Analyze the sample enterprise-support dataset:
 
@@ -227,14 +191,172 @@ Run offline validation:
 ```bash
 python scripts/run_evaluation.py --experiment-id latest --mock
 python -m pytest tests -q
+python -m ruff check src tests scripts app
 python -m pip check
 ```
+
+Explore the SQL dataset model:
+
+```bash
+jupyter notebook notebooks/sql_analysis.ipynb
+```
+
+## Python Examples
+
+### RAG-Grounded Evaluation
+
+```python
+from alignai.rag import (
+    ChromaContextRetriever,
+    RetrievalDocument,
+    build_rag_augmented_judge_messages,
+    evaluate_rag_context,
+)
+
+retriever = ChromaContextRetriever(collection_name="alignai_demo")
+retriever.add_documents([
+    RetrievalDocument(
+        document_id="policy-1",
+        text="Enterprise password resets require MFA verification.",
+        metadata={"source": "security_policy.md"},
+    )
+])
+
+context = retriever.retrieve("How should password resets be handled?", top_k=1)
+messages = build_rag_augmented_judge_messages(
+    user_prompt="How should password resets be handled?",
+    assistant_response="Password resets require MFA verification.",
+    retrieved_context=context,
+)
+rag_scores = evaluate_rag_context(
+    "How should password resets be handled?",
+    "Password resets require MFA verification.",
+    context,
+)
+```
+
+### Code-Generation Alignment
+
+```python
+from alignai.experiments.code_alignment import evaluate_code_quality
+
+report = evaluate_code_quality(
+    "def add(a, b):\n    return a + b\n",
+    language="python",
+)
+
+print(report.to_dict())
+```
+
+### Distributed Training Configuration
+
+```python
+from alignai.training import DistributedTrainingConfig, distributed_training_kwargs
+
+cfg = DistributedTrainingConfig(strategy="ddp", world_size=4, local_rank=0)
+trainer_kwargs = distributed_training_kwargs(cfg)
+```
+
+For multi-process launches:
+
+```bash
+torchrun --nproc_per_node=4 scripts/run_finetune.py \
+  --strategy lora \
+  --dataset data/samples/enterprise_support_dataset.jsonl
+```
+
+## Capability Matrix
+
+| Capability | Implementation |
+| --- | --- |
+| Dataset management | JSONL upload, role distribution, duplicate detection, token estimates, health reports |
+| SQL analysis | SQLite schema for datasets, conversations, messages, model variants, evaluation runs, judge scores, and human preferences |
+| Fine-tuning | Full Fine-Tuning, LoRA, QLoRA, TRL SFTTrainer, PEFT configs, checkpoint persistence |
+| Distributed compute | `torch.distributed.init_process_group`, DDP, FSDP, DataParallel fallback, training kwargs |
+| Generation | Chat-template generation with latency, input tokens, output tokens, total tokens, and tokens/sec |
+| RAG retrieval | ChromaDB vector store, OpenAI embeddings, local hash embeddings, metadata filters, semantic search |
+| RAG evaluation | Relevance, faithfulness, groundedness, unsupported terms, retrieved-context prompt injection |
+| LLM-as-a-judge | OpenAI judge model, 8 rubric categories, JSON response format, retry handling |
+| Code alignment | YAML rubric and heuristic scoring for correctness, security, readability, and efficiency |
+| Human preference | Blind A/B comparison, win-rate analytics, ties, skips, head-to-head summaries |
+| Readiness scoring | 0-100 Alignment Readiness across quality, preference, safety, consistency, dataset health, instruction following, and conciseness |
+| Confidence scoring | Sample coverage, judge variance, human agreement, category coverage, contradiction detection |
+| Decision support | Candidate ranking across 9 deployment signals with evidence, tradeoffs, warnings, and JSON export |
+| Delivery | Streamlit UI, Dockerfile, Makefile, GitHub Actions, pytest, ruff, package metadata |
+
+## Tech Stack
+
+| Layer | Tools |
+| --- | --- |
+| Language | Python 3.11+ |
+| ML framework | PyTorch |
+| LLM tooling | Hugging Face Transformers, Datasets, Accelerate |
+| Fine-tuning | PEFT, LoRA, QLoRA, TRL SFTTrainer, bitsandbytes |
+| Distributed training | PyTorch DDP, FSDP, DataParallel |
+| Retrieval | ChromaDB, OpenAI embeddings, semantic search |
+| Evaluation | OpenAI SDK, LLM-as-a-judge prompts, RAG faithfulness scoring |
+| Code evaluation | YAML rubric and programming-LLM quality heuristics |
+| UI | Streamlit multipage application |
+| Data | SQL, SQLite, JSONL, Pandas, NumPy |
+| Visualization | Matplotlib, Seaborn, Streamlit charts |
+| Delivery | Docker, Makefile, GitHub Actions |
+
+## Repository Structure
+
+```text
+alignai/
+|-- app/                    # Streamlit AI enablement platform
+|   |-- Home.py
+|   `-- pages/              # Dataset, experiment, training, evaluation, alignment, leaderboard, review, reports
+|-- data/
+|   |-- alignment_dataset.sql
+|   |-- samples/            # Enterprise-support sample dataset
+|   `-- artifacts/          # Generated JSON outputs kept out of source control
+|-- docs/                   # Architecture, deployment, evaluation, alignment, decision-engine docs
+|-- notebooks/
+|   |-- 01_finetuning_pipeline.ipynb
+|   |-- 02_evaluation_pipeline.ipynb
+|   `-- sql_analysis.ipynb
+|-- scripts/                # CLI entrypoints for analysis, training, and evaluation
+|-- src/alignai/
+|   |-- alignment/          # Readiness scoring
+|   |-- datasets_analysis/  # Dataset health analysis
+|   |-- evaluation/         # Judge prompts, metrics, reports, confidence
+|   |-- experiments/        # Registry, leaderboard, deployment decision, code alignment
+|   |-- models/             # Model loading and response generation
+|   |-- preference/         # Human review analytics
+|   |-- rag/                # ChromaDB retrieval, prompt augmentation, RAG scoring
+|   `-- training/           # Training strategies, trainer, distributed fine-tuning helpers
+|-- tests/                  # 40-test offline suite
+|-- Dockerfile
+|-- Makefile
+|-- pyproject.toml
+|-- requirements.txt
+|-- requirements-dev.txt
+`-- README.md
+```
+
+## Validation
+
+Current local verification:
+
+| Check | Result |
+| --- | --- |
+| Unit tests | 40 passed |
+| Linting | `ruff check src tests scripts app` passed |
+| Syntax validation | `compileall` passed |
+| Dependency sanity | `python -m pip check` reports no broken requirements |
+| Public repo hygiene | Generated caches, virtual environments, checkpoints, and runtime artifacts excluded |
+
+Test coverage spans core scoring, dataset analysis, experiment registry,
+deployment ranking, human preference analytics, RAG grounding, distributed
+training configuration, code-generation alignment, and report generation.
 
 ## Environment Configuration
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
-| `OPENAI_API_KEY` | Judge evaluation | OpenAI key for LLM-as-a-judge scoring |
+| `OPENAI_API_KEY` | Judge evaluation and production embeddings | OpenAI key for LLM-as-a-judge and embedding retrieval |
 | `OPENAI_JUDGE_MODEL` | Optional | Judge model, default `gpt-4o-mini` |
 | `HF_TOKEN` | Optional | Private Hugging Face model access |
 | `ALIGNAI_BASE_MODEL_LORA` | Optional | Base model for LoRA and QLoRA |
@@ -261,14 +383,6 @@ docker run -p 8501:8501 \
 - [Evaluation Methodology](docs/evaluation_methodology.md)
 - [Alignment Score](docs/alignment_score.md)
 - [Deployment Decision Engine](docs/recommendation_engine.md)
-
-## Operational Notes
-
-- LLM-as-a-judge evaluation uses OpenAI API calls and model usage cost.
-- Full Fine-Tuning and QLoRA are GPU-oriented workloads; QLoRA requires NVIDIA-compatible quantization support.
-- Evaluation confidence is a heuristic explainability signal, not a statistical probability.
-- Runtime artifacts are JSON files under `data/artifacts/` and are ignored by source control except for `.gitkeep`.
-- Model checkpoints and local virtual environments are intentionally excluded from the repository.
 
 ## License
 

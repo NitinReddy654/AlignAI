@@ -20,11 +20,13 @@ dependencies = [
     "bitsandbytes>=0.43.0",
     "openai>=1.14.0",
     "streamlit>=1.32.0",
+    "chromadb>=0.5.0",
     "pandas>=2.1.0",
     "numpy>=1.26.0",
     "matplotlib>=3.8.0",
     "seaborn>=0.13.0",
     "python-dotenv>=1.0.0",
+    "pyyaml>=6.0.1",
 ]
 
 [project.optional-dependencies]
@@ -37,6 +39,9 @@ alignai-analyze = "scripts.analyze_dataset:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+alignai = ["experiments/code_alignment/*.yaml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

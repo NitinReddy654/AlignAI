@@ -62,12 +62,36 @@ Optional:
 - `ALIGNAI_GPU_HOUR_COST` - cost estimation rate
 - `HF_TOKEN` - private model access
 
+## RAG and Vector Store Runtime
+
+RAG features use ChromaDB for vector retrieval. Local development can use the built-in deterministic embedding fallback for offline tests. Production retrieval can use `OpenAIEmbeddingFunction` with `OPENAI_API_KEY`.
+
+```python
+from alignai.rag import ChromaContextRetriever, OpenAIEmbeddingFunction
+
+retriever = ChromaContextRetriever(
+    persist_directory="data/artifacts/chroma",
+    embedding_function=OpenAIEmbeddingFunction(),
+)
+```
+
+## Distributed Training Runtime
+
+Distributed fine-tuning helpers support PyTorch DDP, DataParallel fallback, and FSDP wrapping. Launch multi-process training with `torchrun` and use the runtime environment variables that PyTorch sets:
+
+```bash
+torchrun --nproc_per_node=4 scripts/run_finetune.py \
+  --strategy lora \
+  --dataset data/samples/enterprise_support_dataset.jsonl
+```
+
 ## Release Gates
 
 Before a model variant is promoted, AlignAI expects:
 
 - Secure OpenAI and Hugging Face credentials
 - GPU capacity matched to the selected training strategy
+- Vector store persistence configured for RAG-grounded evaluation
 - Durable artifact storage for checkpoints and reports
 - Completed dataset analysis, automated evaluation, and human preference review
 - Alignment Readiness Score at or above the staged-deployment threshold
